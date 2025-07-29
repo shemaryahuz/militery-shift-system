@@ -11,6 +11,12 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Post('login')
     signIn(@Body() body: Record<string, any>) {
-        return this.authService.signIn(body.username, body.password);
+        return this.authService.logIn(body.username, body.password);
+    }
+    // endpoint for '/auth/register' route
+    @HttpCode(HttpStatus.OK)
+    @Post('register')
+    signUp(@Body() body: Record<string, any>) {
+        return this.authService.signUp(body.username, body.password);
     }
 }
