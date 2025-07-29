@@ -1,39 +1,74 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User, UsersService } from 'src/users/users.service';
+import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService
-    ) {}
-
-    async signIn(
-        username: string,
-        pass: string
-    ): Promise<{access_token: string}> {
-
-        const user: User | undefined = await this.usersService.findOne(username);
-
-        if (!user) {
-            throw new UnauthorizedException({ error: "username not found" });
+    ) { }
+    async hashPassword(password: string): Promise<string> {
+        try {
+            return await bcrypt.hash(password, 10);
+        } catch (error) {
+            const msg = "error hashing password";
+            console.log(msg);
+            throw new InternalServerErrorException({ message: msg });
         }
-
-        const { password } = user; // TODO: using bcrypt and compare to hashed pass
-
-        if (password !== pass) {
-            throw new UnauthorizedException({ error: "wrong password" });
-        }
-
-        const payload = { userId: user.userId, username: user.username };
-        
-        const token = await this.jwtService.signAsync(payload);
-
-        return {
-            access_token: token
-        }
-
     }
-    
+    async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+        try {
+            return await bcrypt.compare(password, hashedPassword);
+        } catch (error) {
+            const msg = "error comparing password";
+            console.log(msg);
+            throw new InternalServerErrorException({ message: msg });
+        }
+    }
+    async validateUsername(username: string) {
+        const existingUser = await this.usersService.findByUsername(username);
+        if (existingUser) {
+            const msg = "username already exists";
+            console.log(msg);
+            throw new UnauthorizedException({ message: msg });
+        }
+    }
+    async validateUser(username: string, password: string): Promise<User> {
+        const user = await this.usersService.findByUsername(username);
+        if (!user) {
+            const msg = "invalid username";
+            console.log(msg);
+            throw new UnauthorizedException({ message: msg });
+        } else {
+            const isValidPassword = await this.comparePassword(password, user.hashedPassword);
+            if (!isValidPassword) {
+                const msg = "invalid password";
+                console.log(msg);
+                throw new UnauthorizedException({ message: msg });
+            }
+            return user;
+        }
+    }
+
+    createToken(user: User) {
+        const payload = { userId: user.userId, username: user.username, role: user.role };
+        return {
+            access_token: this.jwtService.sign(payload),
+        };
+    }
+
+    async logIn(username: string, password: string) {
+        const user = await this.validateUser(username, password);
+        return this.createToken(user);
+    }
+
+    async signUp(username: string, password: string) {
+        await this.validateUsername(username);
+        const hashedPassword = await this.hashPassword(password);
+        const newUser: User = await this.usersService.create({ username, hashedPassword });
+        return this.createToken(newUser);
+    }
 }
