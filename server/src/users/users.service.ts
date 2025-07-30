@@ -5,7 +5,7 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [];
+  private users: User[] = [];
 
   async create(createUserDto: CreateUserDto): Promise<User>{
     const user: User = {
@@ -23,19 +23,23 @@ export class UsersService {
     return this.users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  async findByEmail(email: string): Promise<User | undefined> {
+  async findOne(email: string): Promise<User | undefined> {
     return this.users.find((user) => user.email === email);
   };
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(email: string, updateUserDto: UpdateUserDto): Promise<User | undefined> {
+    const user = this.users.find((user) => user.email === email);
+    if (!user) {
+      return undefined;
+    }
+    user.name = updateUserDto.name ?? user.name;
+    user.email = updateUserDto.email ?? user.email;
+    user.hashedPassword = updateUserDto.password ?? user.hashedPassword;
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(email: string): Promise<any> {
+    this.users = this.users.filter((user) => user.email !== email);
+    return "user deleted";
   }
 }
