@@ -5,6 +5,7 @@ import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,27 +27,27 @@ export class AuthService {
             throw new InternalServerErrorException("error comparing password");
         }
     }
-    async validateUsername(username: string) {
-        const existingUser = await this.usersService.findByUsername(username);
+    async validateEmail(email: string) {
+        const existingUser = await this.usersService.findByEmail(email);
         if (existingUser) {
-            throw new UnauthorizedException("username already exists");
+            throw new UnauthorizedException("email already exists");
         }
     }
     async validateUser(loginDto: LoginDto): Promise<User> {
-        const user = await this.usersService.findByUsername(loginDto.username);
+        const user = await this.usersService.findByEmail(loginDto.email);
         if (!user) {
-            throw new UnauthorizedException("invalid username or password");
+            throw new UnauthorizedException("invalid email or password");
         } else {
             const isValidPassword = await this.comparePassword(loginDto.password, user.hashedPassword);
             if (!isValidPassword) {
-                throw new UnauthorizedException("invalid username or password");
+                throw new UnauthorizedException("invalid email or password");
             }
             return user;
         }
     }
 
     createToken(user: User) {
-        const payload = { userId: user.userId, username: user.username, role: user.role };
+        const payload = { userId: user.id, email: user.email, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
         };
@@ -58,12 +59,14 @@ export class AuthService {
     }
 
     async signUp(signUpDto: SignUpDto) {
-        await this.validateUsername(signUpDto.username);
+        await this.validateEmail(signUpDto.email);
         const hashedPassword = await this.hashPassword(signUpDto.password);
-        const newUser: User = await this.usersService.create({ 
-            username: signUpDto.username, 
+        const user: CreateUserDto = { 
+            name: signUpDto.name,
+            email: signUpDto.email,
             hashedPassword 
-        });
+        }
+        const newUser: User = await this.usersService.create(user);
         return this.createToken(newUser);
     }
 }

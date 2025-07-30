@@ -9,8 +9,9 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User>{
     const user: User = {
-      userId: this.users.length + 1,
-      username: createUserDto.username,
+      id: this.users.length + 1,
+      name: createUserDto.name,
+      email: createUserDto.email,
       hashedPassword: createUserDto.hashedPassword,
       role: "soldier"
     };
@@ -26,8 +27,8 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  async findByUsername(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.users.find((user) => user.email === email);
   };
 
   update(id: number, updateUserDto: UpdateUserDto) {
