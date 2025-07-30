@@ -8,11 +8,11 @@ export class UsersService {
   private readonly users: User[] = [];
 
   async create(createUserDto: CreateUserDto): Promise<User>{
-    const user = {
+    const user: User = {
       userId: this.users.length + 1,
       username: createUserDto.username,
       hashedPassword: createUserDto.hashedPassword,
-      role: "commander"
+      role: "soldier"
     };
     this.users.push(user);
     return user;
