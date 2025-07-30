@@ -5,5 +5,6 @@ import { ShiftsController } from './shifts.controller';
 @Module({
   controllers: [ShiftsController],
   providers: [ShiftsService],
+  exports: [ShiftsService],
 })
 export class ShiftsModule {}
