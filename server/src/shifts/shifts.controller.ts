@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
@@ -9,6 +9,12 @@ export class ShiftsController {
 
   @Post()
   create(@Body() createShiftDto: CreateShiftDto) {
+    if (isNaN(createShiftDto.startTime.getTime())) {
+      throw new BadRequestException("invalid start time format")
+    }
+    if (isNaN(createShiftDto.endTime.getTime())) {
+      throw new BadRequestException("invalid end time format")
+    }
     return this.shiftsService.create(createShiftDto);
   }
 

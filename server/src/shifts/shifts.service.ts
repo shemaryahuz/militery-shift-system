@@ -1,26 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { CreateShiftDto } from './dto/create-shift.dto';
 import { UpdateShiftDto } from './dto/update-shift.dto';
+import { Shift } from './entities/shift.entity';
 
 @Injectable()
 export class ShiftsService {
-  create(createShiftDto: CreateShiftDto) {
-    return 'This action adds a new shift';
+  private shifts: Shift[] = [];
+  async create(createShiftDto: CreateShiftDto): Promise<Shift> {
+    const shift: Shift = {
+      id: this.shifts.length + 1,
+      startTime: createShiftDto.startTime,
+      endTime: createShiftDto.endTime,
+      location: createShiftDto.location
+    }
+    this.shifts.push(shift);
+    return shift;
   }
 
-  findAll() {
-    return `This action returns all shifts`;
+  async findAll(): Promise<Array<Shift>> {
+    return this.shifts;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} shift`;
+  async findOne(id: number): Promise<Shift | undefined> {
+    return this.shifts.find((shift) => shift.id === id);
   }
 
-  update(id: number, updateShiftDto: UpdateShiftDto) {
-    return `This action updates a #${id} shift`;
+  async update(id: number, updateShiftDto: UpdateShiftDto): Promise<Shift | undefined> {
+    const shift: Shift | undefined = this.shifts.find((shift) => shift.id === id);
+    if (!shift){
+      return undefined;
+    }
+    shift.startTime = updateShiftDto.startTime ?? shift.startTime;
+    shift.endTime = updateShiftDto.endTime ?? shift.endTime;
+    shift.location = updateShiftDto.location ?? shift.location;
+    return shift;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} shift`;
+  async remove(id: number): Promise<any> {
+    this.shifts = this.shifts.filter((shift) => shift.id !== id);
+    return "shift deleted";
   }
 }

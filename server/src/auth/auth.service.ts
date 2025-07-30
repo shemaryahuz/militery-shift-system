@@ -3,6 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
+import { LoginDto } from './dto/login.dto';
+import { SignUpDto } from './dto/signup.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,65 +13,53 @@ export class AuthService {
         private usersService: UsersService,
         private jwtService: JwtService
     ) { }
-    async hashPassword(password: string): Promise<string> {
-        try {
-            return await bcrypt.hash(password, 10);
-        } catch (error) {
-            const msg = "error hashing password";
-            console.log(msg);
-            throw new InternalServerErrorException({ message: msg });
-        }
-    }
+
     async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
         try {
             return await bcrypt.compare(password, hashedPassword);
         } catch (error) {
-            const msg = "error comparing password";
-            console.log(msg);
-            throw new InternalServerErrorException({ message: msg });
+            throw new InternalServerErrorException("error comparing password");
         }
     }
-    async validateUsername(username: string) {
-        const existingUser = await this.usersService.findByUsername(username);
+    async validateEmail(email: string) {
+        const existingUser = await this.usersService.findOne(email);
         if (existingUser) {
-            const msg = "username already exists";
-            console.log(msg);
-            throw new UnauthorizedException({ message: msg });
+            throw new UnauthorizedException("email already exists");
         }
     }
-    async validateUser(username: string, password: string): Promise<User> {
-        const user = await this.usersService.findByUsername(username);
+    async validateUser(loginDto: LoginDto): Promise<User> {
+        const user = await this.usersService.findOne(loginDto.email);
         if (!user) {
-            const msg = "invalid username";
-            console.log(msg);
-            throw new UnauthorizedException({ message: msg });
+            throw new UnauthorizedException("invalid email or password");
         } else {
-            const isValidPassword = await this.comparePassword(password, user.hashedPassword);
+            const isValidPassword = await this.comparePassword(loginDto.password, user.hashedPassword);
             if (!isValidPassword) {
-                const msg = "invalid password";
-                console.log(msg);
-                throw new UnauthorizedException({ message: msg });
+                throw new UnauthorizedException("invalid email or password");
             }
             return user;
         }
     }
 
     createToken(user: User) {
-        const payload = { userId: user.userId, username: user.username, role: user.role };
+        const payload = { userId: user.id, email: user.email, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
         };
     }
 
-    async logIn(username: string, password: string) {
-        const user = await this.validateUser(username, password);
+    async logIn(loginDto: LoginDto) {
+        const user = await this.validateUser(loginDto);
         return this.createToken(user);
     }
 
-    async signUp(username: string, password: string) {
-        await this.validateUsername(username);
-        const hashedPassword = await this.hashPassword(password);
-        const newUser: User = await this.usersService.create({ username, hashedPassword });
+    async signUp(signUpDto: SignUpDto) {
+        await this.validateEmail(signUpDto.email);
+        const user: CreateUserDto = { 
+            name: signUpDto.name,
+            email: signUpDto.email,
+            password: signUpDto.password 
+        }
+        const newUser: User = await this.usersService.create(user);
         return this.createToken(newUser);
     }
 }
