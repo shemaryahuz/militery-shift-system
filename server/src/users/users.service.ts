@@ -37,6 +37,10 @@ export class UsersService {
     return this.users.find((user) => user.email === email);
   };
 
+  async findById(id: number): Promise<User | undefined> {
+    return this.users.find((user) => user.id === id);
+  };
+
   async update(email: string, updateUserDto: UpdateUserDto): Promise<User | undefined> {
     const user: User | undefined = this.users.find((user) => user.email === email);
     if (!user) {
