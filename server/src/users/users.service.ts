@@ -38,7 +38,7 @@ export class UsersService {
   };
 
   async update(email: string, updateUserDto: UpdateUserDto): Promise<User | undefined> {
-    const user = this.users.find((user) => user.email === email);
+    const user: User | undefined = this.users.find((user) => user.email === email);
     if (!user) {
       return undefined;
     }
