@@ -12,7 +12,7 @@ export class UsersService {
       id: this.users.length + 1,
       name: createUserDto.name,
       email: createUserDto.email,
-      hashedPassword: createUserDto.hashedPassword,
+      hashedPassword: createUserDto.password,
       role: "soldier"
     };
     this.users.push(user);

@@ -64,7 +64,7 @@ export class AuthService {
         const user: CreateUserDto = { 
             name: signUpDto.name,
             email: signUpDto.email,
-            hashedPassword 
+            password: hashedPassword 
         }
         const newUser: User = await this.usersService.create(user);
         return this.createToken(newUser);
