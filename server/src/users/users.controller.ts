@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,27 +8,47 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    try {
+      return await this.usersService.create(createUserDto);
+    } catch (error) {
+      throw new InternalServerErrorException(`error creating user: ${error.message}`);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll() {
+    try {
+      return await this.usersService.findAll();
+    } catch (error) {
+      throw new InternalServerErrorException(`error finding users: ${error.message}`);
+    }
   }
 
   @Get(':email')
-  findOne(@Param('email') email: string) {
-    return this.usersService.findOne(email);
+  async findOne(@Param('email') email: string) {
+    try {
+      return await this.usersService.findOne(email);
+    } catch (error) {
+      throw new InternalServerErrorException(`error finding user: ${error.message}`);
+    }
   }
 
   @Patch(':email')
-  update(@Param('email') email: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(email, updateUserDto);
+  async update(@Param('email') email: string, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      return await this.usersService.update(email, updateUserDto);
+    } catch (error) {
+      throw new InternalServerErrorException(`error updating user: ${error.message}`);
+    }
   }
 
   @Delete(':email')
-  remove(@Param('email') email: string) {
-    return this.usersService.remove(email);
+  async remove(@Param('email') email: string) {
+    try {
+      return await this.usersService.remove(email);
+    } catch (error) {
+      throw new InternalServerErrorException(`error deliting user: ${error.message}`);
+    }
   }
 }

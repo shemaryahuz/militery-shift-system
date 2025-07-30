@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Post, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/signup.dto';
@@ -12,13 +12,21 @@ export class AuthController {
     // endpoint for '/auth/login' route
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    logIn(@Body(new ValidationPipe()) loginDto: LoginDto) {
-        return this.authService.logIn(loginDto);
+    async logIn(@Body(new ValidationPipe()) loginDto: LoginDto) {
+        try {
+            return await this.authService.logIn(loginDto);
+        } catch (error) {
+            throw new InternalServerErrorException(`error logging in: ${error.message}`);
+        }
     }
     // endpoint for '/auth/register' route
     @HttpCode(HttpStatus.OK)
     @Post('register')
-    signUp(@Body(new ValidationPipe()) signUpDto: SignUpDto) {
-        return this.authService.signUp(signUpDto);
+    async signUp(@Body(new ValidationPipe()) signUpDto: SignUpDto) {
+        try {
+            return await this.authService.signUp(signUpDto);
+        } catch (error) {
+            throw new InternalServerErrorException(`error registering: ${error.message}`);
+        }
     }
 }

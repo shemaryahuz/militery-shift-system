@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
@@ -8,27 +8,47 @@ export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
   @Post()
-  create(@Body() createAssignmentDto: CreateAssignmentDto) {
-    return this.assignmentsService.create(createAssignmentDto);
+  async create(@Body() createAssignmentDto: CreateAssignmentDto) {
+    try {
+      return await this.assignmentsService.create(createAssignmentDto);
+    } catch (error) {
+      throw new InternalServerErrorException(`error creating assignment: ${error.message}`);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.assignmentsService.findAll();
+  async findAll() {
+    try {
+      return await this.assignmentsService.findAll();
+    } catch (error) {
+      throw new InternalServerErrorException(`error finding assignments: ${error.message}`);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.assignmentsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    try {
+      return await this.assignmentsService.findOne(+id);
+    } catch (error) {
+      throw new InternalServerErrorException(`error finding assignment: ${error.message}`);
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAssignmentDto: UpdateAssignmentDto) {
-    return this.assignmentsService.update(+id, updateAssignmentDto);
+  async update(@Param('id') id: string, @Body() updateAssignmentDto: UpdateAssignmentDto) {
+    try {
+      return await this.assignmentsService.update(+id, updateAssignmentDto);
+    } catch (error) {
+      throw new InternalServerErrorException(`error updating assignment: ${error.message}`);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.assignmentsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    try {
+      return await this.assignmentsService.remove(+id);
+    } catch (error) {
+      throw new InternalServerErrorException(`error deliting assignment: ${error.message}`);
+    }
   }
 }
