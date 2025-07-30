@@ -13,13 +13,7 @@ export class AuthService {
         private usersService: UsersService,
         private jwtService: JwtService
     ) { }
-    async hashPassword(password: string): Promise<string> {
-        try {
-            return await bcrypt.hash(password, 10);
-        } catch (error) {
-            throw new InternalServerErrorException("error hashing password");
-        }
-    }
+
     async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
         try {
             return await bcrypt.compare(password, hashedPassword);
@@ -60,11 +54,10 @@ export class AuthService {
 
     async signUp(signUpDto: SignUpDto) {
         await this.validateEmail(signUpDto.email);
-        const hashedPassword = await this.hashPassword(signUpDto.password);
         const user: CreateUserDto = { 
             name: signUpDto.name,
             email: signUpDto.email,
-            password: hashedPassword 
+            password: signUpDto.password 
         }
         const newUser: User = await this.usersService.create(user);
         return this.createToken(newUser);

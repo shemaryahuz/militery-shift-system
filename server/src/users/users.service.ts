@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -7,12 +8,21 @@ import { User } from './entities/user.entity';
 export class UsersService {
   private users: User[] = [];
 
-  async create(createUserDto: CreateUserDto): Promise<User>{
+  async hashPassword(password: string): Promise<string> {
+    try {
+      return await bcrypt.hash(password, 10);
+    } catch (error) {
+      throw new InternalServerErrorException("error hashing password");
+    }
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await this.hashPassword(createUserDto.password);
     const user: User = {
       id: this.users.length + 1,
       name: createUserDto.name,
       email: createUserDto.email,
-      hashedPassword: createUserDto.password,
+      hashedPassword: hashedPassword,
       role: "soldier"
     };
     this.users.push(user);
@@ -32,9 +42,12 @@ export class UsersService {
     if (!user) {
       return undefined;
     }
+    if (updateUserDto.password) {
+      const hashedPassword = await this.hashPassword(updateUserDto.password);
+      user.hashedPassword = hashedPassword;
+    }
     user.name = updateUserDto.name ?? user.name;
     user.email = updateUserDto.email ?? user.email;
-    user.hashedPassword = updateUserDto.password ?? user.hashedPassword;
     return user;
   }
 
