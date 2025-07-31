@@ -42,8 +42,11 @@ export class AuthService {
 
     createToken(user: User) {
         const payload = { userId: user.id, email: user.email, role: user.role };
+        const token = this.jwtService.sign(payload);
         return {
-            access_token: this.jwtService.sign(payload),
+            headers: {
+                 "Authorization": `Bearer ${token}`,
+            }
         };
     }
 
@@ -60,6 +63,11 @@ export class AuthService {
             password: signUpDto.password 
         }
         const newUser: User = await this.usersService.create(user);
-        return this.createToken(newUser);
+        const token = this.createToken(newUser);
+        return {
+            headers: {
+                 "Authorization": `Bearer ${token}`,
+            }
+        };
     }
 }
