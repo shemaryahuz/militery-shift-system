@@ -3,11 +3,12 @@ import { AssignmentsService } from './assignments.service';
 import { AssignmentsController } from './assignments.controller';
 import { UsersModule } from 'src/users/users.module';
 import { ShiftsModule } from 'src/shifts/shifts.module';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [UsersModule, ShiftsModule],
+  imports: [UsersModule, ShiftsModule, AuthModule],
   controllers: [AssignmentsController],
-  providers: [AssignmentsService, AuthGuard],
+  providers: [AssignmentsService],
+  exports: [AssignmentsService],
 })
 export class AssignmentsModule {}

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
 import { ShiftsController } from './shifts.controller';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
+  imports: [AuthModule],
   controllers: [ShiftsController],
-  providers: [ShiftsService, AuthGuard],
+  providers: [ShiftsService],
   exports: [ShiftsService],
 })
 export class ShiftsModule {}
